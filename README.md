@@ -11,3 +11,7 @@ The labs are done on Kali Linux VM on VirtualBox, where I also utilize Burp Suit
 Most of the labs were solved manually then scripted using Python.
 
 Manual penetration testing via random payloads is time-consuming. As such, I will not only try to solve these labs manually, but also I will attempt to write Python scripts that can perform the exploits.
+
+In the cases where I need to enumerate a field, I wrote a list of steps to my approach in the notes.txt file, then I scripted the exploit in Python myself. This is the only way for me to solve the lab since I do not have Burp Intruder.
+
+<!-- Written by Kien Do: https://github.com/kienmarkdo/Authentication-Vulnerabilities-Labs -->
