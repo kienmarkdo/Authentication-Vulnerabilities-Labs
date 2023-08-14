@@ -1,0 +1,28 @@
+Lab 01 - Username enumeration via different responses
+
+End Goal: Login with correct username and password
+
+Analysis:
+
+1. Figure out the correct username
+
+Enumerate the different usernames with some dummy password to find out which username exists.
+Use the given list of usernames in the lab then brute force these usernames.
+Once we get an error message that says "Incorrect password", we'll know that the username is correct, but the password is wrong.
+
+2. Figure out the correct password
+
+With the same username as step 1, we now enumerate the password field with the given list of passwords in the lab.
+Once we receive a status code of 302, we will have successfully logged in and have completed the lab.
+(or, when "Incorrect password" is NOT in the response text)
+
+
+=======================================================================================================================================
+Script usage and output:
+
+┌──(kali㉿kali)-[~/Downloads/Authentication-Vulnerabilities-Labs/lab-01]
+└─$ python3 authentication-lab-01.py "https://0a6a00130456864e86a07a5600280075.web-security-academy.net"
+[+] Determining the username via enumeration...
+[+] Found username succesfully: arcsight
+[+] Determining the password via enumeration...
+[+] Found password succesfully: nicole
