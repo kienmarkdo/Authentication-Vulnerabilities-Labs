@@ -1,0 +1,36 @@
+Lab 03 - Password reset broken logic
+
+End goal: Exploit password reset functionality to reset Carlos' password
+
+Given information:
+
+Your credentials: wiener:peter
+Victim's username: carlos
+
+Approach:
+
+Open the web application in the Burp Suite Browser to log the HTTP requests in the Proxy -> HTTP history tab
+
+1. Login with username "wiener" and password "peter" to test
+2. Logout
+3. Click Forgot Password and enter "wiener", then reset the password to "password"
+4. Send the following URI to Repeater /forgot-password?temp-forgot-password-token=<TOKEN>
+5. In the Request tab, change the username from wiener to carlos to change carlos' password to "password"
+6. Login with username "carlos" and password "password" in the browser
+7. Done
+
+Where is the vulnerability?
+- It is in the implemenation of the forgot password functionality.
+- It checks if the temp-forgot-password-token parameter are the same or not.
+    - If yes, it allows you to reset any user account's password
+- It doesn't actually check to see if this is a valid temporary forgot password token and that that token
+is linked to the user that is requesting the password reset.
+
+=====================================================================================================================
+Python script usage and output:
+
+┌──(kali㉿kali)-[~/Downloads/Authentication-Vulnerabilities-Labs/lab-03]
+└─$ python3 authentication-lab-03.py "https://0a4a00ba03f3f875834837ac00b40039.web-security-academy.net" 
+[+] Resetting Carlos' account...
+[+] Logging into Carlos' account...
+[+] Successfully logged into Carlos' account!
