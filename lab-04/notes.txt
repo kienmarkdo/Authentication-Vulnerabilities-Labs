@@ -1,0 +1,32 @@
+Lab 04 - Username enumeration via subtly different responses
+
+End goal: Enumerate a valid username and then brute-force the user's password.
+
+Analysis:
+
+- We do not know what a valid username is, so we'll have to enumerate through the given list of usernames
+to find out which username is valid based on the response message.
+- We can write out own Python script for this enumeration or use Burp Intruder.
+- After running Burp Intruder, we notice that the response lengths are all different, and the status codes are all 200.
+- Moreover, all of the rendered pages give the same error message.
+- So, we cannot use this technique to determine what the valid username is...
+
+- Go back to Burp session -> Proxy -> Send /login to Repeater
+- Paste the exact error message into Burp Intruder -> Filter -> Negative search for "Invalid username or password."
+- We'll see that 1 username pops up with an error message saying "Invalid username or password" (without a period at the end)
+
+This is the subtly different response. This happens when the developers forget to put a period in the backend error message.
+
+- Now, we can enumerate the password of this user and then we are done.
+
+Since we do not have Burp Pro, we cannot use the negative search filter option in Burp Intruder, so we will script this.
+
+=============================================================================================================================
+Python usage and output:
+
+┌──(kali㉿kali)-[~/Downloads/Authentication-Vulnerabilities-Labs/lab-04]
+└─$ python3 authentication-lab-04.py "https://0a55001d038067c6820225c0002200fa.web-security-academy.net"
+[+] Determining the username via enumeration...
+[+] Found username succesfully: affiliate
+[+] Determining the username via enumeration...
+[+] Found password succesfully: monitor
