@@ -1,0 +1,44 @@
+Lab 06 - Broken brute-force protection, IP block
+
+End goal: Brute-force the user's password.
+
+Given information:
+- Your credentials: wiener:peter
+- Victim's username: carlos
+- Candidate passwords
+
+Analysis:
+
+1. In the Burp browser, try logging with Carlos:asdasd (random password)
+    - Error message is "Incorrect password"
+    - This is a verbose error message, which is a vulnerability that allows us to know whether a username is valid or not.
+
+    - Try logging in a few more times (3 attempts in total), we see this
+    - "You have made too many incorrect login attempts. Please try again in 1 minute(s)."
+    - A soft lock-out to prevent brute forcing.
+
+2. Check the lock-out type
+    - Is it by IP? Is it by account? If I try logging in with another valid username and invalid password, would it lock me out?
+    - Try wiener:asdfsadfadsf
+    - "You have made too many incorrect login attempts. Please try again in 1 minute(s)."
+    - So, no matter what I account I try now, I will still not be allowed to login. Which means it is NOT a lock-out by username.
+
+    - What if I login with valid credentials?
+    - wiener:peter
+    - This works. So I am only locked out if the credentials are invalid.
+
+    - Now let's try to login with invalid credentials. Will I still be able to do that? Or has the time-out timer been reset?
+    - carlos:asdfsadfadsf -> "Incorrect password"
+    - I was allowed to attempt invalid credentials again.
+    - This means that the time-out timer is reset every time I log in with valid credentials. This is a vulnerability.
+
+3. Conclusion
+    - To enumerate Carlos' password without being locked out, I simply enumerate 3 passwords, then login with wiener:peter, 
+        then enumerate another 3 passwords, etc.
+    - I login with wiener:peter after 3 login attempts to reset the time-out timer, which allows me to continue my enumeration.
+
+Since I only have Burp Suite Community Edition, the Intruder functionality is throttled. So, I will script this exploit instead of using Intruder.
+
+=====================================================================================================================================================
+Python script usage and output:
+
