@@ -1,0 +1,47 @@
+Lab 06 - Username enumeration via account lock
+
+End goal: Exploit logic flaw to enumerate valid username and then brute-force user's password.
+
+Given information:
+- Candidate usernames
+- Candidate passwords
+
+Problem:
+- In the last lab, we get locked out by our IP address.
+- In this lab, we get locked out by the account.
+- No other hints are given.
+
+Analysis:
+
+1. Try out a random username and password, then click login several times
+    - If this username gets locked out, then this username exists.
+    - If this username doesn't get locked out, then this username does not exist.
+    - Try asdfsadfasdf:asdfsadfasdf in Burp Repeater.
+        - "Invalid username or password" message after 10 login attempts.
+        - This username therefore does not exist.
+
+2. Find the valid username via username enumeration
+    - In Burp Intruder (or Python script), try logging in with the username list 5 times each.
+    - If one particular username receives a "your account has been locked out due to too many attempts", we'll know that that username exists
+        - <username>:testpassword
+
+3. Find the username's password and login via password enumeration
+    - Try logging in with all of the passwords from the passwords list with the username found in the previous step.
+    - If a username:password combination is valid, there will be no error message.
+    - This is due to a backend logic flaw.
+    - It should continue to lock the login attempt regardless of whether the username/password is correct or not.
+        Otherwise, the lock is useless, because when I get the correct password, it still logs in/displays a different error message.
+
+NOTE: This lab can be completed with Burp Intruder - Cluster Bomb. However, since I only have the Burp Community Edition, I will write my own Python script.
+
+===============================================================================================================================================================
+Python script usage and output:
+                                                                                                                                                                                                                                   
+┌──(kali㉿kali)-[~/Downloads/Authentication-Vulnerabilities-Labs/lab-07]
+└─$ python3 authentication-lab-07.py "https://0a81004804931de481e607340052007f.web-security-academy.net"
+[+] Determining the username via enumeration...
+[+] Found username succesfully: access
+[+] Determining the password via enumeration...
+[+] Found password succesfully: zxcvbnm
+
+Once the script determines the password, wait a minute until the lockout expires, then login with these credentials.
