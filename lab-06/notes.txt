@@ -42,3 +42,7 @@ Since I only have Burp Suite Community Edition, the Intruder functionality is th
 =====================================================================================================================================================
 Python script usage and output:
 
+┌──(kali㉿kali)-[~/Downloads/Authentication-Vulnerabilities-Labs/lab-06]
+└─$ python3 authentication-lab-06.py "https://0a750092044a186882363d3d00950039.web-security-academy.net/"
+[+] Determining Carlos' password via enumeration... Please wait patiently as the script runs.
+[+] Found carlos' password succesfully: harley

